@@ -1,4 +1,5 @@
 ;--------------- PRELIMINARY SETUP ---------------; 
+
 [BITS 16]	 			; Tell NASM we're in 16-bit mode 
 [ORG 0x7C00]	 		; Tell NASM that this code will be loaded at 0x7C00 
 						; to ensure any absolute jumps are calculated correctly 
@@ -15,7 +16,7 @@ PrintString:	 		; Print a string to screen
 						; Assume pointer to string to print is in SI 
 next_character: 
 MOV AL, [SI]			; Grab the next character 
-OR AL, AL	 			; Check if character is zero 
+OR AL, AL				; Check if character is zero 
 JZ exit_function		; If it is, then return 
 CALL PrintCharacter		; Else, print the character 
 INC SI	 				; Increment pointer for next character 
@@ -42,3 +43,6 @@ TIMES 510 - ($ - $$) DB 0
 
 ; Fill last two bytes (a word) with the MBR signature 0xAA55 
 DW 0xAA55
+
+;We need to make 1.44 mb in order to make a full disk image
+TIMES 1474560 - ($ - $$) DB 0
