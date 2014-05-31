@@ -8,6 +8,8 @@
 
 MOV SI, HelloString		; Store pointer to hello world string in SI 
 CALL PrintString		; Print the string 
+MOV SI, AnotherString
+CALL PrintString
 HLT 					; Stop the processor 
 
 ;---------------- SCREEN FUNCTIONS ---------------; 
@@ -35,6 +37,7 @@ RET
 ;------------------ DATA BLOCK ------------------; 
 
 HelloString db 'Hello World', 0 
+AnotherString db 'Another String', 0 
 
 ;-------------- PADDING / SIGNATURE -------------; 
 ; $ is current line, $$ is first line, db 0 is a 00000000 byte 
@@ -44,5 +47,12 @@ TIMES 510 - ($ - $$) DB 0
 ; Fill last two bytes (a word) with the MBR signature 0xAA55 
 DW 0xAA55
 
-;We need to make 1.44 mb in order to make a full disk image
-TIMES 1474560 - ($ - $$) DB 0
+;------------------- Stage 2 --------------------;
+
+Start2:
+
+;The size of the second stage is 1024 bytes
+TIMES 1536 - ($ - $$) DB 0
+
+;heads =5, cylinders = 980, sectors = 17, bytes per sector = 512, 40 mb
+TIMES 42649600 - ($ - $$) DB 0
