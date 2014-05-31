@@ -218,3 +218,4 @@ pip-log.txt
 ##OTHER
 ###############
 bootloader/bl_stage_1.img
+bootloader/bochsrc.bxrc
