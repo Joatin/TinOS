@@ -5,6 +5,6 @@ TinOS is the codename of a new Operating System project. The goal is to create a
 
 Since all programs will be compiled on installation it gives a whole new opertunity to perform security checks during compilation instead of during runtime. And together with the new feature with relative adressing it could theoreticly be possible to run several programs in the same adressspace. The removal of context-switching could give a great performance gain as well as better battery effiency. 
 
-This OS will also be using some modified form of the ZFS file system. Its high security and its great caching abilities is something thats going to be preferable in the future.
+A new file system called TinOS Secure File System (TOSFS for now). It is going to support per file encryption, journaling, checksums of data blocks, and a sort of software raid for important files.
 
-The OS will also be built with the idea that it might run i a whery concurrent environment. Who knows, in the future a OS might be required to run on hundreds, or even thousands of cores. 
+The OS will also be built with the idea that it might run in a very concurrent environment. Who knows, in the near future a OS might be required to run on hundreds, or even thousands of cores. 
