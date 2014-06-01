@@ -220,3 +220,5 @@ pip-log.txt
 bootloader/bl_stage_1.img
 bootloader/bochsrc.bxrc
 bootloader/none
+docs/TOSFS/TOSFS Definition.docx
+kernel/linker.ld

@@ -10,25 +10,48 @@
 Start:
 ;jmp reset
 
-reset:					; Reset the floppy drive
+reset:
 mov ax, 0
-mov dl, 0x80				; Drive=0 (=A)
+.reset:
+mov [COUNTER], ax
+mov ax, 0
+mov dl, 0x80
 int 13h
-jc reset				; ERROR => reset again
+jnc read
+mov ax, [COUNTER]
+inc ax
+cmp ax, 4
+jg reseterror
+jmp .reset
 
+reseterror:
+mov si, RESETERRORSTRING
+call PrintString
+cli
+hlt
 
 read:
+mov ax, 0
+.read:
+mov [COUNTER], ax
 mov ax, 0
 mov ds, ax
 mov si, DAP
 mov ah, 0x42
-mov dl, 0x80           ; Drive=0
-int 13h             ; Read!
+mov dl, 0x80
+int 13h
+jnc Start2
+mov ax, [COUNTER]
+inc ax
+cmp ax, 4
+jg readerror
+jmp .read
 
-jc read             ; ERROR => Try again
-
-jmp Start2      ; Jump to the program
-
+readerror:
+mov si, READERRORSTRING
+call PrintString
+cli
+hlt
 ;---------------- SCREEN FUNCTIONS ---------------; 
 
 PrintString:	 		; Print a string to screen 
@@ -57,10 +80,13 @@ RET
 
 ;------------------ DATA BLOCK ------------------; 
 
+COUNTER dw 0
+RESETERRORSTRING db 'Could not reset the hard drive', 0
+READERRORSTRING db 'Could not read from the hard drive', 0
 DAP:
 db 0x10
 db 0x00
-dw 0x0002
+dw 0x000F
 dw Start2
 dw 0x0000
 dd 0x00000001
@@ -69,7 +95,18 @@ dd 0x00000000
 ;-------------- PADDING / SIGNATURE -------------; 
 ; $ is current line, $$ is first line, db 0 is a 00000000 byte 
 ; So, pad the code with 0s until you reach 510 bytes 
-TIMES 510 - ($ - $$) DB 0 
+TIMES 492 - ($ - $$) DB 0 
+
+;-------------- TOSFS Master Header -------------;
+;The kernel start sector
+dd 0x00000000
+dd 0x00000000
+;The kernel size, in sectors
+dd 0x00000000
+dd 0x00000000
+;Flags
+dw 0x00
+;Position of Master Node?
 
 ; Fill last two bytes (a word) with the MBR signature 0xAA55 
 DW 0xAA55
