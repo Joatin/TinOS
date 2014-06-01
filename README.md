@@ -8,3 +8,5 @@ Since all programs will be compiled on installation it gives a whole new opertun
 A new file system called TinOS Secure File System (TOSFS for now). It is going to support per file encryption, journaling, checksums of data blocks, and a sort of software raid for important files.
 
 The OS will also be built with the idea that it might run in a very concurrent environment. Who knows, in the near future a OS might be required to run on hundreds, or even thousands of cores. 
+
+TinOS will be using the PRISM Programing Language (Parallel Rich Intelligent Scalar Managed Programing Language). It is a new language being developed alongside with TinOS. Its going to be built around the concept of concurrence and the modern ability to allow code to run on difrent anhancing devices such as GPGPU:s.
