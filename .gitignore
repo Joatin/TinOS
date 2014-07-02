@@ -221,5 +221,5 @@ bootloader/bl_stage_1.img
 bootloader/bochsrc.bxrc
 bootloader/none
 docs/TOSFS Definition.docx
-docs/PRISM Definition.docx
+docs/PRISM Definition.odt
 kernel/linker.ld
