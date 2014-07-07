@@ -57,8 +57,7 @@ hlt
 
 jumpstg2:
 mov ax, 0x80
-mov [0x7E00], ax
-jmp 0x7E01
+jmp 0x500
 ;---------------- SCREEN FUNCTIONS ---------------; 
 
 PrintString:	 		; Print a string to screen 
@@ -94,7 +93,7 @@ DAP:
 db 0x10					; Size of DAP
 db 0x00					; Always 0
 dw 0x000F				; Numbers of sectors to read
-dw 0x7E00				; Segment:offset pointer to target location
+dw 0x0500				; Segment:offset pointer to target location
 dw 0x0000
 dq 0x00000000000007F0	; Number of the start sector, the first partion starts at 0x0800, our second stage is located 16 sectors before
 
@@ -102,7 +101,9 @@ dq 0x00000000000007F0	; Number of the start sector, the first partion starts at 
 ;-------------- PADDING / SIGNATURE -------------; 
 ; $ is current line, $$ is first line, db 0 is a 00000000 byte 
 ; So, pad the code with 0s until you reach 484 bytes 
-TIMES 494 - ($ - $$) db 0 
+TIMES 490 - ($ - $$) db 0 
+
+dw 0x54494e42 ; TINB
 
 ;---------------------- MBR ---------------------;
 dw 0x0000

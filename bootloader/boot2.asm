@@ -14,12 +14,14 @@ section .data follows=.text
 BOOTDEVICE: dw 0
 COUNTER: dw 0x0000
 MMAPCOUNT dw 0
+READERROR db 'READERROR', 0
+HELLOWORLD db 'HELLO WORLD', 0
 
-DAP:
+DAP_GPT:
 db 0x10					; Size of DAP
 db 0x00					; Always 0
-dw 0x000F				; Numbers of sectors to read
-dw 0x7E00				; Segment:offset pointer to target location
+dw 0x0020				; Numbers of sectors to read
+dw GPT				; Segment:offset pointer to target location
 dw 0x0000
 dq 0x0000000000000001	; Number of the start sector, the first partion starts at 0x0800, our second stage is located 16 sectors before
 
@@ -67,36 +69,38 @@ Main:
 	mov [BOOTDEVICE], ax
 	mov ax, stack
     mov ss, ax
-	
-	
+	mov si, HELLOWORLD
+	call PrintString
+	call ReadGPTFromDisk
+
 ;;
 ;; Reads the Guid Partition Table from the bootdrive
 ;;
 [bits 16]
 ReadGPTFromDisk:
-mov ax, 0
-.ReadGPT:
-mov [COUNTER], ax
-mov ax, 0
-mov ds, ax
-mov si, DAP
-mov ah, 0x42
-mov dl, [BOOTDEVICE]
-int 13h
-jnc .ReadGPTEnd
-mov ax, [COUNTER]
-inc ax
-cmp ax, 4
-jg .ReadGPTError
-jmp .ReadGPT
+	mov ax, 0
+	.ReadGPT:
+		mov [COUNTER], ax
+		mov ax, 0
+		mov ds, ax
+		mov si, DAP_GPT
+		mov ah, 0x42
+		mov dl, [BOOTDEVICE]
+		int 13h
+		jnc .ReadGPTEnd
+		mov ax, [COUNTER]
+		inc ax
+		cmp ax, 4
+		jg .ReadGPTError
+		jmp .ReadGPT
+	.ReadGPTError:
+		mov si, READERROR
+		call PrintString
+		cli
+		hlt
+	.ReadGPTEnd:
+		ret
 
-.ReadGPTError:
-cli
-hlt
-
-.ReadGPTEnd:
-ret
-	
 ;;
 ;; Reads the memory map
 ;;
@@ -152,8 +156,8 @@ ReadMemoryMap:
 	.failed:
 		stc			; "function unsupported" error exit
 		ret
-	
-	
+
+
 [bits 16]
 EnterProtected:
 cli
@@ -171,6 +175,37 @@ or al, 1
 mov cr0, eax
 ;jmp 08h:PModeMain
 
+;;
+;; Prints a null terminated string to the screen
+;;
+;; @param si, the pointer to the string
+PrintString:	 		; Print a string to screen, Assume pointer to string to print is in SI 
+	.next_character: 
+		MOV AL, [SI]			; Grab the next character 
+		OR AL, AL				; Check if character is zero 
+		JZ .exit_function		; If it is, then return 
+		CALL PrintCharacter		; Else, print the character 
+		INC SI	 				; Increment pointer for next character 
+		JMP .next_character		; Loop 
+	.exit_function: 
+		MOV AL, 10
+		CALL PrintCharacter
+		MOV AL, 13
+		CALL PrintCharacter
+		RET 
+
+;;
+;; Prints a character to the screen
+;;
+;; @param al, the character to print
+;;
+PrintCharacter:	 		; Print a single character to screen, Assume character to print is in AL 
+	MOV AH, 0x0E	 		; Teletype Mode 
+	MOV BH, 0x00	 		; Page zero 
+	MOV BL, 0x07	 		; Light Gray 
+	INT 0x10	 			; Print Character 
+	RET 
+
 
 ;----------- Uninitialized Data Section ----------;
 section .bss
@@ -179,7 +214,7 @@ section .bss
 ;;
 stack:
     resb 64
-	
+
 ;;
 ;; The Guid Partition Table
 ;;
@@ -190,9 +225,9 @@ GPT:
 	    resb 512
 	GPT_ENTRIES:
 		resb 16384
-		
+
 MEMORYMAP: 
 	resb 1536
-	
+
 KERNELHEAP:
 	resb 512*20
