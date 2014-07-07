@@ -8,7 +8,8 @@
 					
 ;---------------- BOOTLOADER CODE ----------------; 
 Start:
-mov ss, 0x0A00
+mov ax, 0x0500
+mov ss, ax
 ;jmp reset
 
 reset:
@@ -41,7 +42,7 @@ mov si, DAP
 mov ah, 0x42
 mov dl, 0x80
 int 13h
-jnc Start2
+jnc jumpstg2
 mov ax, [COUNTER]
 inc ax
 cmp ax, 4
@@ -53,6 +54,11 @@ mov si, READERRORSTRING
 call PrintString
 cli
 hlt
+
+jumpstg2:
+mov ax, 0x80
+mov [0x7E00], ax
+jmp 0x7E01
 ;---------------- SCREEN FUNCTIONS ---------------; 
 
 PrintString:	 		; Print a string to screen 
@@ -85,12 +91,18 @@ COUNTER dw 0
 RESETERRORSTRING db 'Could not reset the hard drive', 0
 READERRORSTRING db 'Could not read from the hard drive', 0
 DAP:
-db 0x10
-db 0x00
-dw 0x000F
-dw Start2
+db 0x10					; Size of DAP
+db 0x00					; Always 0
+dw 0x000F				; Numbers of sectors to read
+dw 0x7E00				; Segment:offset pointer to target location
 dw 0x0000
-dq 0x0000000000000001
+dq 0x00000000000007F0	; Number of the start sector, the first partion starts at 0x0800, our second stage is located 16 sectors before
+
+
+;-------------- PADDING / SIGNATURE -------------; 
+; $ is current line, $$ is first line, db 0 is a 00000000 byte 
+; So, pad the code with 0s until you reach 484 bytes 
+TIMES 494 - ($ - $$) db 0 
 
 ;---------------------- MBR ---------------------;
 dw 0x0000
@@ -100,10 +112,6 @@ dw 0xFFFF
 dd 0x00000001
 dd 0xFFFFFFFF
 
-;-------------- PADDING / SIGNATURE -------------; 
-; $ is current line, $$ is first line, db 0 is a 00000000 byte 
-; So, pad the code with 0s until you reach 510 bytes 
-TIMES 492 - ($ - $$) DB 0 
 ; Fill last two bytes (a word) with the MBR signature 0xAA55 
-DW 0xAA55
+dw 0xAA55
 

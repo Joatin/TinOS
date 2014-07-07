@@ -217,9 +217,11 @@ pip-log.txt
 ###############
 ##OTHER
 ###############
-bootloader/bl_stage_1.img
+bootloader/boot.img
 bootloader/bochsrc.bxrc
 bootloader/none
+bootloader/bootbuild.bat
+bootloader/bin/
 docs/TOSFS Definition.docx
 docs/PRISM Definition.odt
 kernel/linker.ld
