@@ -218,10 +218,19 @@ pip-log.txt
 ##OTHER
 ###############
 bootloader/boot.img
-bootloader/bochsrc.bxrc
+bochsrc.bxrc
 bootloader/none
 bootloader/bootbuild.bat
 bootloader/bin/
 docs/TOSFS Definition.docx
 docs/PRISM Definition.odt
 kernel/linker.ld
+assemble.asm
+none
+build.bat
+kernel/kernelbuild.bat
+TinOS.img
+
+
+
+

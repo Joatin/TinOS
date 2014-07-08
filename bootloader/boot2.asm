@@ -6,7 +6,7 @@
 ;; This is the second stage of the bootloader
 ;;
 
-[org 0x500]
+[org 0x0500]
 CPU x64
 
 ;--------------- Data Area ----------------;
@@ -15,7 +15,8 @@ BOOTDEVICE: dw 0
 COUNTER: dw 0x0000
 MMAPCOUNT dw 0
 READERROR db 'READERROR', 0
-HELLOWORLD db 'HELLO WORLD', 0
+HELLOWORLD db 'TINOS ALPHA VER 1.0.0', 0
+NOENTRY db 'No Kernel Partition Entry in GPT table', 0
 
 DAP_GPT:
 db 0x10					; Size of DAP
@@ -56,7 +57,7 @@ GDT:
 GDT_end:
 
 ;----------------- Code Area -----------------;
-section .text start=0x500
+section .text start=0x0500
 
 
 ;;
@@ -69,9 +70,14 @@ Main:
 	mov [BOOTDEVICE], ax
 	mov ax, stack
     mov ss, ax
+	call ReadGPTFromDisk
+	call ValidateTable
+	call FindKernelPartition
+	call LoadKernel
 	mov si, HELLOWORLD
 	call PrintString
-	call ReadGPTFromDisk
+	cli
+	hlt
 
 ;;
 ;; Reads the Guid Partition Table from the bootdrive
@@ -101,6 +107,71 @@ ReadGPTFromDisk:
 	.ReadGPTEnd:
 		ret
 
+;;
+;; Validates the GPT table in order to see if its valid
+;;	
+ValidateTable:
+	;cmp [GPT_LBA1]
+	ret
+
+	
+;;
+;; Parses the gpt entries and returns the start adress of the kernel
+;;
+;; @return ebx:eax, the start lba sector of the kernel
+;;
+FindKernelPartition:
+	push edx
+	mov edx, GPT_ENTRIES
+	.next:
+		mov eax, edx
+		mov ebx, [eax]
+		cmp ebx, 0x00000000
+		jne .move
+		add eax, 4
+		mov ebx, [eax]
+		cmp ebx, 0x00000000
+		jne .move
+		add eax, 4
+		mov ebx, [eax]
+		cmp ebx, 0x00000000
+		jne .move
+		add eax, 4
+		mov ebx, [eax]
+		cmp ebx, 0x00000000
+		jne .move
+		jmp .found
+	.move:
+		add edx, 0x0080
+		mov eax, GPT_ENTRIES
+		add eax, 16384
+		cmp edx, eax
+		je .notfound
+		jmp .next
+	.found:
+		add eax, 0x0020
+		mov ebx, [eax]
+		add eax, 4
+		mov eax, [eax]
+		pop edx
+		ret
+	.notfound:
+		mov si, NOENTRY
+		call PrintString
+		cli
+		hlt
+		
+		
+;;
+;; Loads the kernel into memory
+;;
+;; @param ebx:eax, the start lba adress of the kernel
+;;
+LoadKernel:
+
+	ret
+		
+		
 ;;
 ;; Reads the memory map
 ;;
@@ -220,8 +291,6 @@ stack:
 ;;
 GPT:
     GPT_LBA1:
-	    resb 512
-	GPT_LBA2:
 	    resb 512
 	GPT_ENTRIES:
 		resb 16384

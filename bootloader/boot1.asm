@@ -1,5 +1,10 @@
-;Copyright Joatin Granlund. All rights reserved.
-
+;;
+;; Copyright Joatin Granlund. All rights reserved.
+;;
+;; MODULE "boot1.asm"
+;;
+;; This is the first stage of the bootloader
+;;
 ;--------------- PRELIMINARY SETUP ---------------; 
 
 [BITS 16]	 			; Tell NASM we're in 16-bit mode 
@@ -57,7 +62,7 @@ hlt
 
 jumpstg2:
 mov ax, 0x80
-jmp 0x500
+jmp 0x0500
 ;---------------- SCREEN FUNCTIONS ---------------; 
 
 PrintString:	 		; Print a string to screen 
@@ -89,6 +94,7 @@ RET
 COUNTER dw 0
 RESETERRORSTRING db 'Could not reset the hard drive', 0
 READERRORSTRING db 'Could not read from the hard drive', 0
+TESTW db 'TEST', 0
 DAP:
 db 0x10					; Size of DAP
 db 0x00					; Always 0
@@ -103,7 +109,7 @@ dq 0x00000000000007F0	; Number of the start sector, the first partion starts at 
 ; So, pad the code with 0s until you reach 484 bytes 
 TIMES 490 - ($ - $$) db 0 
 
-dw 0x54494e42 ; TINB
+dd 0x54494e42 ; TINB
 
 ;---------------------- MBR ---------------------;
 dw 0x0000
